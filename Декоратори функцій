@@ -1,0 +1,116 @@
+Декоратори функцій
+1) Создайте декоратор, который будет подсчитывать, сколько раз была
+вызвана декорируемая функция.
+
+def counter(func):
+    def inner(*args, **kwargs):
+        inner.count += 1
+        return func(*args, **kwargs)
+
+    inner.count = 0
+    return inner
+
+@counter
+def sum(x, y):
+    return x + y
+
+@counter
+def mul(x, y):
+    return x * y
+
+print(sum(3, 4))
+print(sum(5, 7))
+print(sum(8, 3))
+print(sum.count)
+
+print(mul(2, 3))
+print(mul(4, 5))
+print(mul.count)
+
+2) Создайте декоратор, который зарегистрирует декорируемую функцию в
+списке функций, для обработки последовательности.
+
+all_lst_func = []
+
+def lst_func(func):
+    all_lst_func.append(func)
+    return func
+
+@lst_func
+def get_len(*args):
+    return len(*args)
+
+@lst_func
+def get_iter(*args):
+    res = args * 2
+    return res
+
+@lst_func
+def get_reversed(*args):
+    return reversed(*args)
+
+y = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+a = get_len(y)
+b = get_iter(y)
+c = list(get_reversed(y))
+print(a)
+print(b)
+print(c)
+print(all_lst_func)
+
+3) Предположим, в классе определен метод __str__, который возвращает
+строку на основании класса. Создайте такой декоратор для этого метода,
+чтобы полученная строка сохранялась в текстовый файл, имя которого
+совпадает с именем класса, метод которого вы декорировали.
+
+def New_decorator_to_file(func) -> 'file':
+    def wrapper(*args):
+        file_name = func.__str__()
+        with open(f'{file_name}.txt', 'w') as f:
+            return f.write(func(*args))
+    return wrapper
+
+class Rectangle:
+
+    def __init__(self, length: int | float, width: int | float):
+        self.length = length
+        self.width = width
+
+    def area(self):
+        return self.length * self.width
+
+    @New_decorator_to_file
+    def __str__(self):
+        return f'{self.length} * {self.width}'
+
+Rectangle_1 = Rectangle(5, 7)
+print(Rectangle_1.__str__)
+
+4) Создайте декоратор с параметрами для проведения хронометража работы
+той или иной функции. Параметрами должны выступать то, сколько раз нужно
+запустить декорируемую функцию и в какой файл сохранить результаты
+хронометража. Цель - провести хронометраж декорируемой функции.
+
+import time
+
+def to_file(function, file_name: str = 'result.txt', n: int = 3):
+    def wrapper(*args, **kwargs):
+        total = 0
+        for i in range(n):
+            start = time.time()
+            value = function(*args, **kwargs)
+            end = time.time()
+            total += (end - start)
+            print('Время выполнения: {} секунд.'.format(end-start))
+        with open(file_name, 'w') as f:
+            f.write(f'{total}')
+            f.close
+            return value
+    return wrapper
+
+@to_file
+def add1(x, y):
+    time.sleep(1)
+    return x + y
+
+print(add1(8, 15))
